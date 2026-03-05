@@ -49,75 +49,79 @@ class TrueCostViewModel(
         _uiState.update { it.copy(productPrice = value) }
     }
 
-    // ---------- CALCULATION ----------
+    fun saveProfile() {
+        // Beispiel: wir speichern monatliches Einkommen und Stunden
+        val state = _uiState.value
 
-    fun calculate() {
+        // ---------- CALCULATION ----------
+    }
+        fun calculate() {
 
-        val currentState = _uiState.value
+            val currentState = _uiState.value
 
-        val income = currentState.monthlyIncome.toDoubleOrNull()
-        val hours = currentState.monthlyHours.toDoubleOrNull()
-        val price = currentState.productPrice.toDoubleOrNull()
+            val income = currentState.monthlyIncome.toDoubleOrNull()
+            val hours = currentState.monthlyHours.toDoubleOrNull()
+            val price = currentState.productPrice.toDoubleOrNull()
 
-        if (income == null || hours == null || price == null || hours <= 0) {
+            if (income == null || hours == null || price == null || hours <= 0) {
+                _uiState.update {
+                    it.copy(
+                        resultText = "Bitte gültige Werte eingeben.",
+                        isError = true
+                    )
+                }
+                return
+            }
+
+            val user = UserProfile(
+                monthlyIncome = income,
+                monthlyWorkingHours = hours
+            )
+
+            val product = Product(
+                name = currentState.productName,
+                price = price
+            )
+
+            val result = calculator.calculate(user, product)
+
+            // UI Update
             _uiState.update {
                 it.copy(
-                    resultText = "Bitte gültige Werte eingeben.",
-                    isError = true
+                    resultText = "Das kostet dich ${result.hours}h ${result.minutes}min Lebenszeit.",
+                    isError = false
                 )
             }
-            return
-        }
 
-        val user = UserProfile(
-            monthlyIncome = income,
-            monthlyWorkingHours = hours
-        )
-
-        val product = Product(
-            name = currentState.productName,
-            price = price
-        )
-
-        val result = calculator.calculate(user, product)
-
-        // UI Update
-        _uiState.update {
-            it.copy(
-                resultText = "Das kostet dich ${result.hours}h ${result.minutes}min Lebenszeit.",
-                isError = false
-            )
-        }
-
-        // Persist to Room
-        viewModelScope.launch {
-            repository.save(
-                LifeCostEntity(
-                    productName = product.name,
-                    productPrice = product.price,
-                    lifeHoursDecimal = result.totalHoursDecimal,
-                    createdAt = System.currentTimeMillis()
+            // Persist to Room
+            viewModelScope.launch {
+                repository.save(
+                    LifeCostEntity(
+                        productName = product.name,
+                        productPrice = product.price,
+                        lifeHoursDecimal = result.totalHoursDecimal,
+                        createdAt = System.currentTimeMillis()
+                    )
                 )
-            )
+            }
+        }
+
+        // ---------- CLEAR HISTORY ----------
+
+        fun clearHistory() {
+            viewModelScope.launch {
+                repository.clear()
+            }
+        }
+
+        // ---------- AGGREGATION (BONUS FEATURE) ----------
+
+        fun getTotalLifeHoursThisMonth(): Double {
+            val now = System.currentTimeMillis()
+            val monthAgo = now - (30L * 24 * 60 * 60 * 1000)
+
+            return history.value
+                .filter { it.createdAt >= monthAgo }
+                .sumOf { it.lifeHoursDecimal }
         }
     }
-
-    // ---------- CLEAR HISTORY ----------
-
-    fun clearHistory() {
-        viewModelScope.launch {
-            repository.clear()
-        }
-    }
-
-    // ---------- AGGREGATION (BONUS FEATURE) ----------
-
-    fun getTotalLifeHoursThisMonth(): Double {
-        val now = System.currentTimeMillis()
-        val monthAgo = now - (30L * 24 * 60 * 60 * 1000)
-
-        return history.value
-            .filter { it.createdAt >= monthAgo }
-            .sumOf { it.lifeHoursDecimal }
-    }
-}

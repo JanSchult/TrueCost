@@ -9,40 +9,41 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
-import com.example.truecost.data.model.LifeCostEntity
-import com.example.truecost.ui.composables.dashboard.AddNewButton
 import com.example.truecost.ui.composables.dashboard.HeaderSection
-import com.example.truecost.ui.composables.dashboard.MonthlySummaryCard
-import com.example.truecost.ui.composables.dashboard.RecentEntriesCard
+import com.example.truecost.ui.composables.homescreen.IncomeSection
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.truecost.ui.composables.profil.HourlyWageCard
+import com.example.truecost.ui.composables.profil.SaveProfileButton
 import com.example.truecost.viewmodel.TrueCostViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun DashboardScreen(
-    history: List<LifeCostEntity>,
-    totalHoursThisMonth: Double,
-    onAddNew: (() -> Unit)? = null
+fun ProfileScreen(
+    modifier: Modifier = Modifier
 ) {
-    val recent = history.take(3)
     val viewModel: TrueCostViewModel = koinViewModel()
-    val history by viewModel.history.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        HeaderSection(title = "Dashboard")
+        HeaderSection(title = "Profil")
 
-        MonthlySummaryCard(totalHoursThisMonth)
+        IncomeSection(
+            income = state.monthlyIncome,
+            hours = state.monthlyHours,
+            onIncomeChanged = viewModel::onIncomeChanged,
+            onHoursChanged = viewModel::onHoursChanged
+        )
 
-        RecentEntriesCard(recent)
+        HourlyWageCard(state.monthlyHours.toDoubleOrNull() ?: 0.0)
 
-        onAddNew?.let {
-            AddNewButton(it)
-        }
+        SaveProfileButton(
+            onClick = viewModel::saveProfile
+        )
     }
 }

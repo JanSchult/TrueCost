@@ -4,13 +4,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.truecost.ui.composables.homescreen.CalculateButton
-import com.example.truecost.ui.composables.homescreen.IncomeSection
 import com.example.truecost.ui.composables.homescreen.ProductSection
 import com.example.truecost.ui.composables.homescreen.ResultSection
 import com.example.truecost.ui.composables.homescreen.TitleSection
@@ -19,27 +21,21 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun HomeScreen(
-    viewModel: TrueCostViewModel = koinViewModel(),
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onOpenHistory: () -> Unit
 ) {
+
+    val viewModel: TrueCostViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
         TitleSection()
-
-        IncomeSection(
-            income = state.monthlyIncome,
-            hours = state.monthlyHours,
-            onIncomeChanged = viewModel::onIncomeChanged,
-            onHoursChanged = viewModel::onHoursChanged
-        )
 
         ProductSection(
             productName = state.productName,
@@ -56,5 +52,9 @@ fun HomeScreen(
             resultText = state.resultText,
             isError = state.isError
         )
+
+        Button(onClick = onOpenHistory) {
+            Text("Zur Historie")
+        }
     }
 }

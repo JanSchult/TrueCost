@@ -31,5 +31,11 @@ fun TrueCostBottomBar(navController: NavController) {
             label = { Text("Dashboard") },
             icon = {}
         )
+        NavigationBarItem(
+            selected = false,
+            onClick = { navController.navigate(ProfileRoute) },
+            label = { Text("Profil") },
+            icon = {}
+        )
     }
 }

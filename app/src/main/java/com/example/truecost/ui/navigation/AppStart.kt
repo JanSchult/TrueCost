@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.truecost.ui.screens.DashboardScreen
 import com.example.truecost.ui.screens.HistoryScreen
 import com.example.truecost.ui.screens.HomeScreen
+import com.example.truecost.ui.screens.ProfileScreen
 import com.example.truecost.viewmodel.TrueCostViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -19,8 +20,6 @@ import org.koin.androidx.compose.koinViewModel
 fun AppStart() {
 
     val navController = rememberNavController()
-
-    val trueCostViewModel: TrueCostViewModel = koinViewModel()
 
     Scaffold(
         bottomBar = { TrueCostBottomBar(navController) }
@@ -36,27 +35,34 @@ fun AppStart() {
 
             composable<HomeRoute> {
 
-                val state by trueCostViewModel.uiState.collectAsState()
 
-                HomeScreen(
-                    viewModel = trueCostViewModel,
-                    onOpenHistory = {
-                        navController.navigate(HistoryRoute)
-                    },
-                    modifier = Modifier
-                )
-            }
+                composable<HomeRoute> {
+                    val viewModel: TrueCostViewModel = koinViewModel()
+                    val state by viewModel.uiState.collectAsState()
 
-            // ---------------- HISTORY ----------------
+                    HomeScreen(
+                        onOpenHistory = {
+                            navController.navigate(HistoryRoute)
+                        }
+                    )
+                }
+
+
+                // ---------------- HISTORY ----------------
 
             composable<HistoryRoute> {
-                val history by trueCostViewModel.history.collectAsState()
+
+                val viewModel: TrueCostViewModel = koinViewModel()
+                val history by viewModel.history.collectAsState()
+
                 HistoryScreen(
                     entries = history,
-                    onItemClick = { entry ->
-                        navController.navigate(LifeCostDetailRoute(entry.id))
+                    onItemClick = { entryId ->
+                        navController.navigate(
+                            LifeCostDetailRoute(entryId)
+                        )
                     },
-                    onClearAll = { trueCostViewModel.clearHistory() }
+                    onClearAll = viewModel::clearHistory
                 )
             }
 
@@ -64,14 +70,35 @@ fun AppStart() {
 
             composable<DashboardRoute> {
 
-                val history by trueCostViewModel.history.collectAsState()
+                val viewModel: TrueCostViewModel = koinViewModel()
+                val history by viewModel.history.collectAsState()
 
                 DashboardScreen(
                     history = history,
                     totalHoursThisMonth =
-                        trueCostViewModel.getTotalLifeHoursThisMonth()
+                        viewModel.getTotalLifeHoursThisMonth(),
+                    onAddNew = {
+                        navController.navigate(HomeRoute)
+                    }
+                )
+            }
+
+            // ---------------- PROFILE ----------------
+
+            composable<ProfileRoute> {
+
+                val viewModel: TrueCostViewModel = koinViewModel()
+                val state by viewModel.uiState.collectAsState()
+
+                ProfileScreen(
+                    monthlyIncome = state.monthlyIncome,
+                    weeklyHours = state.weeklyWorkingHours,
+                    hourlyWage = state.hourlyWage,
+                    onIncomeChange = viewModel::onIncomeChanged,
+                    onHoursChange = viewModel::onHoursChanged,
+                    onSave = viewModel::saveProfile
                 )
             }
         }
     }
-}
+}}

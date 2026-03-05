@@ -1,16 +1,18 @@
 package com.example.truecost.ui.navigation
 
+import com.example.truecost.data.model.LifeCostEntity
 import kotlinx.serialization.Serializable
 @Serializable
-data object HomeRoute
+object HomeRoute
 
 @Serializable
-data object HistoryRoute
+object HistoryRoute
 
 @Serializable
-data object DashboardRoute
-
+ object DashboardRoute
+@Serializable
+object ProfileRoute
 @Serializable
 data class LifeCostDetailRoute(
-    val entryId: Long
+    val entryId: LifeCostEntity
 )
