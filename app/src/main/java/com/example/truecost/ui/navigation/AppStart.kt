@@ -58,9 +58,9 @@ fun AppStart() {
                 HistoryScreen(
                     entries = history,
                     onItemClick = { entryId ->
-                        navController.navigate(
-                            LifeCostDetailRoute(entryId)
-                        )
+                      //  navController.navigate(
+                      //      LifeCostDetailRoute(entryId)
+                        //     )
                     },
                     onClearAll = viewModel::clearHistory
                 )
@@ -90,14 +90,7 @@ fun AppStart() {
                 val viewModel: TrueCostViewModel = koinViewModel()
                 val state by viewModel.uiState.collectAsState()
 
-                ProfileScreen(
-                    monthlyIncome = state.monthlyIncome,
-                    weeklyHours = state.weeklyWorkingHours,
-                    hourlyWage = state.hourlyWage,
-                    onIncomeChange = viewModel::onIncomeChanged,
-                    onHoursChange = viewModel::onHoursChanged,
-                    onSave = viewModel::saveProfile
-                )
+                ProfileScreen()
             }
         }
     }

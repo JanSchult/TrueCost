@@ -12,7 +12,3 @@ object HistoryRoute
  object DashboardRoute
 @Serializable
 object ProfileRoute
-@Serializable
-data class LifeCostDetailRoute(
-    val entryId: LifeCostEntity
-)
